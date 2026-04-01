@@ -38,8 +38,8 @@ def combinar(grupos):                                           #primeira rodada
     novos_mintermos = {};                                       #onde guardaremos os novos mintermos agrupados
     mintermos_usados = set();                                   #guardando os mintermos q ja foram usados                
     for i in range(len(grupos)-1):                                 #vamos comparar os mintermos do grupo i com os mintermos do grupo i+1 (zero 1 com um 1, um 1 com dois 1s, dois 1s com três 1s...), pois estão em ordem e diferem de apenas 1 bit     
-        for mintermo1 in grupos[i]:
-            for mintermo2 in grupos[i+1]:
+        for mintermo1 in grupos.get(i, []):
+            for mintermo2 in grupos.get(i+1, []):
                 resultado = comparar(mintermo1, mintermo2);             
                 if resultado != None:                               #se o resultado for um mintermo combinado, a gente marca que os mintermos que geraram ele já foram usados
                     mintermos_usados.add(mintermo1);
@@ -99,7 +99,7 @@ def algoritmo_quine_mccluesky(mintermos, bits):                       #aqui impl
             
             mintermos_cobertos.add(m) 
 
-        return resultado_final                                              #retorna todos os implicantes que cobrem os mintermos originais (de forma mínima, obviamente)
+        return formatar(resultado_final,bits);                                              #retorna todos os implicantes que cobrem os mintermos originais (de forma mínima, obviamente)
 
 def tabela_de_cobertura(implicantes_finais, mintermos):
     tabela = {};                                                        #dicionario em que serão armazenados os implicamentes primos relacionados aos mintermos que se encaixam com ele
@@ -128,3 +128,29 @@ def primos_essenciais(tabela):
             essenciais.add(lista[0]);
     
     return essenciais;
+
+def formatar(implicantes, bits):                                            #formatação do jeito que o café usa (do livro de eletronica digital, joao luiz tambem usava assim) em que as variáveis são lidas em ordem DCBA ao inves de ABCD, por exemplo
+    alfabeto = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    variaveis_usadas = alfabeto[:bits][::-1];
+
+    final = [];
+
+    for impl in implicantes:
+        termo = "";
+        for i in range(bits):
+            if impl[i] == '1':
+                termo += variaveis_usadas[i];
+            elif impl[i] == '0':
+                termo += variaveis_usadas[i] + "'";
+        
+        if termo == "": 
+            termo = "1";
+            
+        final.append(termo);
+    
+    return " + ".join(final);
+
+Mintermos = [5, 7, 13, 15];
+bits = 4;
+
+print(algoritmo_quine_mccluesky(Mintermos, bits))
