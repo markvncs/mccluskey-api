@@ -67,7 +67,9 @@ def algoritmo_quine_mccluesky(mintermos, bits):                       #aqui impl
     while True:                                                       #loop que fica combinando os mintermos até não ser possível fazer mais combinações
         novos_grupos, implicantes_primos = combinar(grupos, bits);
 
-        implicantes_finais += implicantes_primos;                      #vai guardando todos os implicantes primos das combinações em uma lista
+        for p in implicantes_primos:
+            if p not in implicantes_finais:
+                implicantes_finais.append(p)                      #vai guardando todos os implicantes primos das combinações em uma lista
 
         if not novos_grupos:
             break;
@@ -91,22 +93,60 @@ def algoritmo_quine_mccluesky(mintermos, bits):                       #aqui impl
             if cobre:
                 mintermos_cobertos.add(m)   
 
-    for m in mintermos:                                                    #verifica quais mintermos não sao cobertos pelos implicantes essenciais. se não for, pega o primeiro implicante associado ao mintermo sem implicante essencial e coloca no resultado final
-        if m not in mintermos_cobertos:
-            implicante_escolhido = tabela[m][0]
-            if implicante_escolhido not in resultado_final:
-                resultado_final.append(implicante_escolhido)
-            
-            mintermos_cobertos.add(m) 
+    from itertools import combinations                                  #essa parte pra baixo resolve o problema da cobertura de conjuntos, a gente testa todas as combinações e pega a quantidade minima de implicantes que cobrem todos os mintermos
+
+    resultado_final = list(essenciais)                                     #a lista com o resultado final ja começa com os implicantes essenciais
+
+    mintermos_cobertos = set()                                              #rastrear quais mintermos ja foram cobertos
+
+    for e in essenciais:                                                  #verificamos se os essenciais cobrem todos os mintermos
+        for m in mintermos:
+            mBin = format(m, 'b').zfill(bits)
+            ok = True
+            for i in range(len(e)):
+                if e[i] != '-' and e[i] != mBin[i]:
+                    ok = False
+                    break
+            if ok:
+                mintermos_cobertos.add(m)
+
+    candidatos = implicantes_finais.copy()                                  #os essenciais nao cobrem tudo, entao vamos fazer um monte de combinacoes
+
+    melhor = None                                                            #essa variavel vai guardar a melhor combinacao encontrada
+
+    for r in range(1, len(candidatos) + 1):                                  #testando as combinações de todos os implicantes primos com os mintermos da menor forma possivel                    
+        for combo in combinations(candidatos, r):                            #esses testes acabam inutilizando a funçao q fiz pra achar os implicantes primos essencias, mas vou manter, junto com a tabela, para manter a possibilidade de escalar o projeto e adicionar informações visuais relacionadas a tabela e os implicantes essenciais (mostrar as etapas, passo a passo...)
+
+            cobertos = set()
+
+            for implicante in combo:
+                for m in mintermos:
+                    mBin = format(m, 'b').zfill(bits)
+                    ok = True
+                    for i in range(len(implicante)):
+                        if implicante[i] != '-' and implicante[i] != mBin[i]:
+                            ok = False
+                            break
+                    if ok:
+                        cobertos.add(m)
+
+            if len(cobertos) == len(mintermos):
+                melhor = combo
+                break
+
+        if melhor:
+            break
+
+    resultado_final = list(melhor) 
 
     return formatar(resultado_final,bits);                                              #retorna todos os implicantes que cobrem os mintermos originais (de forma mínima, obviamente)
 
 def tabela_de_cobertura(implicantes_finais, mintermos):
-    tabela = {};                                                        #dicionario em que serão armazenados os implicamentes primos relacionados aos mintermos que se encaixam com ele
+    tabela = {};                                                                #dicionario em que serão armazenados os implicamentes primos relacionados aos mintermos que se encaixam com ele
     for min in mintermos:
         tabela[min] = [];                                               
         
-    for implicante in implicantes_finais:                                   #aqui, pega cada mintermo, passa pra binário e compara os bits com os bits de cada implicante. Se o implicante se encaixa com o mintermo (ex: --1 com 011 / -0- 101), vai ser guardado no dicionario associado ao mintermo (011: --1 / 101: -0-)
+    for implicante in implicantes_finais:                                       #aqui, pega cada mintermo, passa pra binário e compara os bits com os bits de cada implicante. Se o implicante se encaixa com o mintermo (ex: --1 com 011 / -0- 101), vai ser guardado no dicionario associado ao mintermo (011: --1 / 101: -0-)
         for m in mintermos:
             minBin = format(m, 'b').zfill(len(implicante));
             cobre = True;
@@ -149,3 +189,8 @@ def formatar(implicantes, bits):                                            #for
         final.append(termo);
     
     return " + ".join(final);
+
+mintermos = [0, 1, 2, 5, 6, 7]
+bits = 3
+
+print(algoritmo_quine_mccluesky(mintermos, bits))
