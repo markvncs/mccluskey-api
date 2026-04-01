@@ -149,8 +149,3 @@ def formatar(implicantes, bits):                                            #for
         final.append(termo);
     
     return " + ".join(final);
-
-Mintermos = [0, 1, 2, 3, 4, 5, 6, 7];
-bits = 4;
-
-print(algoritmo_quine_mccluesky(Mintermos, bits))
