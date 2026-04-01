@@ -34,10 +34,10 @@ def comparar(mintermo1, mintermo2):                                #funçao que 
         
         return minCombinado;                                     #retorna o mintermo ja combinado, com - onde os bits diferiram
 
-def combinar(grupos):                                           #primeira rodada em que combinamos os termos 
+def combinar(grupos, bits):                                           #primeira rodada em que combinamos os termos 
     novos_mintermos = {};                                       #onde guardaremos os novos mintermos agrupados
     mintermos_usados = set();                                   #guardando os mintermos q ja foram usados                
-    for i in range(len(grupos)-1):                                 #vamos comparar os mintermos do grupo i com os mintermos do grupo i+1 (zero 1 com um 1, um 1 com dois 1s, dois 1s com três 1s...), pois estão em ordem e diferem de apenas 1 bit     
+    for i in range(bits):                                 #vamos comparar os mintermos do grupo i com os mintermos do grupo i+1 (zero 1 com um 1, um 1 com dois 1s, dois 1s com três 1s...), pois estão em ordem e diferem de apenas 1 bit     
         for mintermo1 in grupos.get(i, []):
             for mintermo2 in grupos.get(i+1, []):
                 resultado = comparar(mintermo1, mintermo2);             
@@ -65,7 +65,7 @@ def algoritmo_quine_mccluesky(mintermos, bits):                       #aqui impl
     implicantes_finais = []                                            #lista final onde todos os implicantes primos ficarão armazenados para usarmos na tabela final
 
     while True:                                                       #loop que fica combinando os mintermos até não ser possível fazer mais combinações
-        novos_grupos, implicantes_primos = combinar(grupos);
+        novos_grupos, implicantes_primos = combinar(grupos, bits);
 
         implicantes_finais += implicantes_primos;                      #vai guardando todos os implicantes primos das combinações em uma lista
 
@@ -99,7 +99,7 @@ def algoritmo_quine_mccluesky(mintermos, bits):                       #aqui impl
             
             mintermos_cobertos.add(m) 
 
-        return formatar(resultado_final,bits);                                              #retorna todos os implicantes que cobrem os mintermos originais (de forma mínima, obviamente)
+    return formatar(resultado_final,bits);                                              #retorna todos os implicantes que cobrem os mintermos originais (de forma mínima, obviamente)
 
 def tabela_de_cobertura(implicantes_finais, mintermos):
     tabela = {};                                                        #dicionario em que serão armazenados os implicamentes primos relacionados aos mintermos que se encaixam com ele
@@ -150,7 +150,7 @@ def formatar(implicantes, bits):                                            #for
     
     return " + ".join(final);
 
-Mintermos = [5, 7, 13, 15];
+Mintermos = [0, 1, 2, 3, 4, 5, 6, 7];
 bits = 4;
 
 print(algoritmo_quine_mccluesky(Mintermos, bits))
